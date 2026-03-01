@@ -12,11 +12,29 @@
 
 ## Install
 
+One command, nothing left behind:
+
 ```bash
-git clone https://github.com/YOUR_USERNAME/specwright.git /tmp/specwright
-cd your-project
-bash /tmp/specwright/install.sh
+curl -fsSL https://raw.githubusercontent.com/ranjith-src/specwright/main/remote-install.sh | bash
 ```
+
+Or install into a specific directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ranjith-src/specwright/main/remote-install.sh | bash -s /path/to/project
+```
+
+Downloads to `/tmp`, installs, cleans up. No cloned repo left in your project.
+
+<details>
+<summary>Alternative: clone and install manually</summary>
+
+```bash
+git clone https://github.com/ranjith-src/specwright.git /tmp/specwright
+bash /tmp/specwright/install.sh
+rm -rf /tmp/specwright
+```
+</details>
 
 ## What Gets Installed
 
@@ -51,13 +69,17 @@ your-project/
 │   │   ├── spec.md
 │   │   ├── COMMIT_MSG.md
 │   │   └── PULL_REQUEST.md
-│   └── scripts/                        # Shell automation
-│       ├── new-change.sh
-│       ├── new-spike.sh
-│       ├── new-decision.sh
-│       ├── archive-change.sh
-│       ├── archive-spike.sh
-│       └── status.sh
+│   ├── scripts/                        # Shell automation
+│   │   ├── new-change.sh
+│   │   ├── new-spike.sh
+│   │   ├── new-decision.sh
+│   │   ├── archive-change.sh
+│   │   ├── archive-spike.sh
+│   │   └── status.sh
+│   └── hooks/                          # Git hooks (installed to .git/hooks/)
+│       ├── pre-commit                  # Protects framework files
+│       ├── commit-msg                  # Enforces conventional commits
+│       └── pre-push                    # Warns on stale specs
 │
 └── blueprint/                          # Living project documentation
     ├── PROJECT.md                      # (framework-independent, survives
@@ -161,11 +183,31 @@ spike.md → [explore freely] → findings.md → commit → archive
 
 ## Customisation
 
-- **`blueprint/PROJECT.md`** — project context agents read first
-- **`blueprint/principles/`** — engineering guardrails
-- **`.specwright/templates/`** — all generated artifacts use these
-- **`.specwright/templates/COMMIT_MSG.md`** — commit convention
-- **`.specwright/templates/PULL_REQUEST.md`** — PR/MR template
+Edit files in `blueprint/` — that's your project knowledge, change it freely.
+
+Files in `.specwright/` and `.github/skills/` are **protected by a pre-commit hook**.
+The agent cannot modify them, and neither can you accidentally. To intentionally
+update the framework:
+
+```bash
+SPECWRIGHT_UNLOCK=1 git commit -m "chore: update specwright templates"
+# or: git commit --no-verify
+```
+
+## Git Hooks
+
+Specwright installs three hooks (into `.git/hooks/`, source in `.specwright/hooks/`):
+
+| Hook | Behaviour |
+|------|-----------|
+| **pre-commit** | Blocks commits that modify `.specwright/` or `.github/skills/sw-*`. Bypass: `SPECWRIGHT_UNLOCK=1` or `--no-verify`. |
+| **commit-msg** | Validates conventional commit format (`type(scope): description`). Rejects malformed messages. Bypass: `--no-verify`. |
+| **pre-push** | Warns (does not block) if code changed but `blueprint/specs/` wasn't updated. Advisory only. |
+
+If hooks weren't installed (no `.git/` at install time):
+```bash
+cp .specwright/hooks/* .git/hooks/ && chmod +x .git/hooks/*
+```
 
 ## Philosophy
 

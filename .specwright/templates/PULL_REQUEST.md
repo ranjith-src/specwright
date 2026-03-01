@@ -1,3 +1,5 @@
+<!-- DO NOT EDIT: Managed by Specwright. Bypass: SPECWRIGHT_UNLOCK=1 -->
+
 # Pull Request / Merge Request Template
 
 > Used by /sw-pr to generate PR/MR descriptions from change artifacts.

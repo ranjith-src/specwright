@@ -1,4 +1,5 @@
 #!/bin/bash
+# DO NOT EDIT: Managed by Specwright. Bypass: SPECWRIGHT_UNLOCK=1
 set -euo pipefail
 
 TITLE="${1:?Usage: new-decision.sh <decision-title>}"

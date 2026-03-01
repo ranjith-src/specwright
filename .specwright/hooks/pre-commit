@@ -1,0 +1,38 @@
+#!/bin/bash
+# Specwright pre-commit hook: protect framework files from modification.
+# Bypass with: SPECWRIGHT_UNLOCK=1 git commit ...
+# Or: git commit --no-verify
+
+if [ "${SPECWRIGHT_UNLOCK:-0}" = "1" ]; then
+  exit 0
+fi
+
+# Allow the initial commit (framework files need to be committed first)
+if ! git rev-parse HEAD >/dev/null 2>&1; then
+  exit 0
+fi
+
+# Only block modifications to already-tracked framework files
+BLOCKED_FILES=""
+for path in ".specwright/" ".github/skills/sw-"; do
+  matches=$(git diff --cached --name-only --diff-filter=M HEAD -- | grep "^${path}" || true)
+  if [ -n "$matches" ]; then
+    BLOCKED_FILES="${BLOCKED_FILES}${matches}\n"
+  fi
+done
+
+if [ -n "$BLOCKED_FILES" ]; then
+  echo "╔══════════════════════════════════════════════════════════╗"
+  echo "║  Specwright: framework files are protected              ║"
+  echo "╚══════════════════════════════════════════════════════════╝"
+  echo ""
+  echo "These files are managed by Specwright and should not be"
+  echo "modified during normal development:"
+  echo ""
+  echo -e "$BLOCKED_FILES" | sed '/^$/d' | sed 's/^/  /'
+  echo ""
+  echo "If you intentionally need to update the framework:"
+  echo "  SPECWRIGHT_UNLOCK=1 git commit ..."
+  echo "  or: git commit --no-verify"
+  exit 1
+fi

@@ -36,6 +36,12 @@ cp "$SCRIPT_DIR/.specwright/templates/COMMIT_MSG.md" "$TARGET_DIR/.specwright/te
 cp "$SCRIPT_DIR/.specwright/templates/PULL_REQUEST.md" "$TARGET_DIR/.specwright/templates/"
 echo "  ✓ .specwright/templates/"
 
+# Hooks (source copy for reference / reinstallation)
+mkdir -p "$TARGET_DIR/.specwright/hooks"
+cp "$SCRIPT_DIR/.specwright/hooks/"* "$TARGET_DIR/.specwright/hooks/"
+chmod +x "$TARGET_DIR/.specwright/hooks/"*
+echo "  ✓ .specwright/hooks/"
+
 # --- blueprint/ ---
 echo "Initialising blueprint/..."
 mkdir -p "$TARGET_DIR/blueprint"/{specs,decisions,changes/{active,spikes,archive},principles}
@@ -170,13 +176,33 @@ if [ -f "$TARGET_DIR/.gitignore" ]; then
   fi
 fi
 
+# --- Git hooks ---
+if [ -d "$TARGET_DIR/.git" ]; then
+  echo "Installing git hooks..."
+  mkdir -p "$TARGET_DIR/.git/hooks"
+  for hook in "$SCRIPT_DIR/.specwright/hooks/"*; do
+    name=$(basename "$hook")
+    if [ -f "$TARGET_DIR/.git/hooks/$name" ]; then
+      echo "  · .git/hooks/$name (exists, skipped — merge manually)"
+    else
+      cp "$hook" "$TARGET_DIR/.git/hooks/$name"
+      chmod +x "$TARGET_DIR/.git/hooks/$name"
+      echo "  ✓ .git/hooks/$name"
+    fi
+  done
+else
+  echo "Git hooks:"
+  echo "  · No .git directory found. Run 'git init' first, then:"
+  echo "    cp .specwright/hooks/* .git/hooks/ && chmod +x .git/hooks/*"
+fi
+
 echo ""
 echo "=== Specwright installed ==="
 echo ""
 echo "Installed:"
-echo "  .github/skills/  → agent skills (slash commands)"
-echo "  .specwright/      → framework tooling (templates, scripts)"
-echo "  blueprint/        → project documentation (specs, decisions, changes)"
+echo "  .github/skills/    → agent skills (slash commands)"
+echo "  .specwright/        → framework tooling (templates, scripts, hooks)"
+echo "  blueprint/          → project documentation (specs, decisions, changes)"
 echo ""
 echo "Next steps:"
 echo "  1. Edit blueprint/PROJECT.md with your project context"

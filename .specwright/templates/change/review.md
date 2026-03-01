@@ -1,3 +1,5 @@
+<!-- DO NOT EDIT: Managed by Specwright. Bypass: SPECWRIGHT_UNLOCK=1 -->
+
 # Review: {{NAME}}
 
 > This is a personal retrospective, not a code review.

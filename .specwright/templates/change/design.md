@@ -1,3 +1,5 @@
+<!-- DO NOT EDIT: Managed by Specwright. Bypass: SPECWRIGHT_UNLOCK=1 -->
+
 # Design: {{NAME}}
 
 ## Approach

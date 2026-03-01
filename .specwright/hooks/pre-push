@@ -1,0 +1,44 @@
+#!/bin/bash
+# Specwright pre-push hook: warn if code changed but specs weren't updated.
+# This is a warning, not a block — push still proceeds.
+# Bypass with: git push --no-verify
+
+# Get commits being pushed
+REMOTE="$1"
+RANGE=""
+
+while read local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+    # New branch — compare against main/master
+    BASE=$(git rev-parse --verify main 2>/dev/null || git rev-parse --verify master 2>/dev/null || echo "")
+    [ -n "$BASE" ] && RANGE="$BASE..$local_sha"
+  else
+    RANGE="$remote_sha..$local_sha"
+  fi
+done
+
+if [ -z "$RANGE" ]; then
+  exit 0
+fi
+
+# Check if code files changed
+CODE_CHANGED=$(git diff --name-only "$RANGE" 2>/dev/null | grep -vE "^(blueprint/|\.specwright/|\.github/|README|LICENSE|\.gitignore)" || true)
+
+# Check if specs were updated
+SPECS_CHANGED=$(git diff --name-only "$RANGE" 2>/dev/null | grep "^blueprint/specs/" || true)
+
+if [ -n "$CODE_CHANGED" ] && [ -z "$SPECS_CHANGED" ]; then
+  echo "╔══════════════════════════════════════════════════════════╗"
+  echo "║  Specwright: code changed but specs may be stale        ║"
+  echo "╚══════════════════════════════════════════════════════════╝"
+  echo ""
+  echo "  Code files were modified but no specs in blueprint/specs/"
+  echo "  were updated. If this change affects system behaviour,"
+  echo "  consider updating the relevant spec."
+  echo ""
+  echo "  This is a reminder, not a block. Push is proceeding."
+  echo ""
+fi
+
+# Always allow push (this is advisory only)
+exit 0

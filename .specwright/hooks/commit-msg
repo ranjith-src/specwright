@@ -1,0 +1,33 @@
+#!/bin/bash
+# Specwright commit-msg hook: enforce conventional commit format.
+# Bypass with: git commit --no-verify
+
+MSG_FILE="$1"
+MSG=$(head -1 "$MSG_FILE")
+
+# Allow merge commits
+if echo "$MSG" | grep -qE "^Merge "; then
+  exit 0
+fi
+
+# Conventional commit pattern: type(scope): description  OR  type: description
+PATTERN="^(feat|fix|docs|refactor|test|chore|perf|ci|build|style)(\([a-z0-9._-]+\))?: .+"
+
+if ! echo "$MSG" | grep -qE "$PATTERN"; then
+  echo "╔══════════════════════════════════════════════════════════╗"
+  echo "║  Specwright: commit message does not follow convention   ║"
+  echo "╚══════════════════════════════════════════════════════════╝"
+  echo ""
+  echo "  Expected: <type>(<scope>): <description>"
+  echo "  Got:      $MSG"
+  echo ""
+  echo "  Types: feat, fix, docs, refactor, test, chore, perf, ci, build, style"
+  echo "  Examples:"
+  echo "    feat(phone-auth): implement SMS validation"
+  echo "    fix(auth): handle null token in middleware"
+  echo "    docs: update system spec"
+  echo ""
+  echo "  See: .specwright/templates/COMMIT_MSG.md"
+  echo "  Bypass: git commit --no-verify"
+  exit 1
+fi

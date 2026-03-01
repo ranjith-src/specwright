@@ -1,40 +1,56 @@
 ---
 name: sw-new-spike
 description: >
-  Start an exploratory spike with a timebox. Use when the problem isn't well
+  Start an exploratory spike from user intent. The user describes what they
+  want to learn, the agent sets up the spike and conducts the exploration,
+  then presents findings for review. Use when the problem isn't well
   understood, evaluating a technology, prototyping, or investigating before
   committing to a full change. Trigger on "explore", "investigate", "evaluate",
   "prototype", "spike", "try out", "would X work for", "compare approaches",
   or any request where scope is unclear and exploration is needed first.
 ---
 
+<!-- DO NOT EDIT: Managed by Specwright. Changes will be rejected by pre-commit hook. -->
+<!-- To update, modify the source repo and reinstall. Bypass: SPECWRIGHT_UNLOCK=1 -->
+
 # Spike Workflow
 
-Timeboxed exploration. No ceremony — question, timebox, findings.
+The user asks a question. You explore. They review findings.
 
 ## Steps
 
-1. **Get a spike name and timebox.**
-   "evaluate redis for caching" → `evaluate-redis-caching`
+1. **Capture the question.** What does the user want to learn? If unclear,
+   ask — a specific question gets a useful spike.
 
-2. **Run the script:**
+2. **Derive a spike name** and suggest a timebox:
+   "Would Redis work for our session cache?" → `redis-session-cache`, 2 hours
+
+3. **Run the script:**
    ```bash
    bash .specwright/scripts/new-spike.sh <spike-name>
    ```
 
-3. **Fill in spike.md:** Question, approach, timebox, success criteria.
+4. **Draft spike.md:** Frame the user's question, propose an exploration
+   approach, set the timebox, define success criteria. Present for quick
+   confirmation before exploring.
 
-4. **Explore freely.** No proposals, no tests, no design docs. Write throwaway code.
+5. **Explore.** No proposals, no tests, no design docs. Write throwaway code.
+   Run benchmarks. Test integrations. Work freely within the timebox.
 
-5. **When done or timebox expires, fill in findings.md:**
+6. **Draft findings.md when done:**
    - Direct answer to the question
    - Evidence (data, benchmarks, observations)
-   - Recommendation: full change, ADR only, or drop it
+   - Your recommendation: full change, ADR only, or drop it
 
-6. **Next steps:**
+7. **Present findings for review.** Let the user decide the next step:
    - Worth building? → `/sw-new-change`
    - Architectural learning? → `/sw-new-decision`
    - Dead end? → `/sw-archive`
+
+## Roles
+
+**Human:** ask the question, review findings, decide next step.
+**Agent:** set up spike, explore, gather evidence, recommend.
 
 ## Key principle
 

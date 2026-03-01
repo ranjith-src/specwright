@@ -6,6 +6,9 @@ description: >
   "show active work", "project status", or at the start of a session.
 ---
 
+<!-- DO NOT EDIT: Managed by Specwright. Changes will be rejected by pre-commit hook. -->
+<!-- To update, modify the source repo and reinstall. Bypass: SPECWRIGHT_UNLOCK=1 -->
+
 # Status Check
 
 ```bash

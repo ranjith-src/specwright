@@ -2,19 +2,20 @@
 name: sw-pr
 description: >
   Create a Pull Request (GitHub) or Merge Request (GitLab) with a description
-  generated from Specwright change artifacts. The PR/MR body includes the
-  problem statement, design approach, test coverage, and related decisions —
-  giving reviewers full context without leaving the PR. Use after committing
-  and pushing, when code is ready for review. Trigger on "create PR", "open
-  PR", "pull request", "merge request", "MR", "ready for review", "push and
-  create PR", "submit for review", or when implementation and review.md are
-  complete. Works with both GitHub and GitLab.
+  generated from change artifacts. The agent assembles the PR body from
+  proposal, design, tests, and review artifacts, and the user confirms before
+  creation. Use after committing and pushing, when code is ready for review.
+  Trigger on "create PR", "open PR", "pull request", "merge request", "MR",
+  "ready for review", "push and create PR", "submit for review", or when
+  implementation and review.md are complete. Works with GitHub and GitLab.
 ---
+
+<!-- DO NOT EDIT: Managed by Specwright. Changes will be rejected by pre-commit hook. -->
+<!-- To update, modify the source repo and reinstall. Bypass: SPECWRIGHT_UNLOCK=1 -->
 
 # PR/MR Workflow
 
-Creates a Pull Request or Merge Request with description assembled from
-your change artifacts. Reviewers get full context in the PR itself.
+You assemble the PR from change artifacts. The user confirms before creation.
 
 ## Steps
 
@@ -22,53 +23,30 @@ your change artifacts. Reviewers get full context in the PR itself.
    ```bash
    REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
    ```
-   - Contains `github.com` → GitHub (uses `gh` CLI)
-   - Contains `gitlab` → GitLab (uses `glab` CLI)
-   - If CLI not available, generate description for manual creation
+   - Contains `github.com` → GitHub (`gh` CLI)
+   - Contains `gitlab` → GitLab (`glab` CLI)
+   - Neither available → generate description for manual copy-paste
 
 2. **Identify the active change:**
-   - Check `blueprint/changes/active/` for the current change
-   - If multiple active, ask the user which one
+   - Check `blueprint/changes/active/`
+   - If multiple, ask the user which one
 
-3. **Read change artifacts** to build description:
+3. **Read change artifacts** to assemble description:
    - `proposal.md` → Problem statement and scope
    - `design.md` → Technical approach
    - `tests.md` → Test coverage summary
    - `tasks.md` → Completion status
-   - `review.md` → Self-review notes (if filled in)
+   - `review.md` → Self-review notes, areas to scrutinise
    - Related ADRs from `blueprint/decisions/`
+   - Reference template: `.specwright/templates/PULL_REQUEST.md`
 
-4. **Generate PR/MR title:**
-   Format: `<type>(<scope>): <description>`
-   Example: `feat(auth): add JWT-based user authentication`
+4. **Draft PR/MR title and description:**
+   Title: `<type>(<scope>): <description>`
+   Body: problem, approach, test coverage, changes, decisions, review notes,
+   checklist — all assembled from the artifacts.
 
-5. **Generate PR/MR description** following
-   `.specwright/templates/PULL_REQUEST.md`:
-
-   ```markdown
-   ## Problem
-   [From proposal.md — what and why]
-
-   ## Approach
-   [From design.md — how, key design choices]
-
-   ## Test Coverage
-   [From tests.md — what's tested, edge cases covered]
-
-   ## Changes
-   [From tasks.md + git diff --stat — files changed summary]
-
-   ## Decisions
-   [Links to any ADRs created during this change]
-
-   ## Review Notes
-   [From review.md — known tradeoffs, areas to scrutinise]
-
-   ## Checklist
-   - [ ] Tests pass
-   - [ ] Specs updated
-   - [ ] No unrelated changes
-   ```
+5. **Present for confirmation.** Show the user the title, description, base
+   branch, and head branch. Wait for approval.
 
 6. **Create the PR/MR:**
 
@@ -76,7 +54,7 @@ your change artifacts. Reviewers get full context in the PR itself.
    ```bash
    gh pr create \
      --title "<title>" \
-     --body "<generated-description>" \
+     --body "<description>" \
      --base main \
      --head <current-branch>
    ```
@@ -85,7 +63,7 @@ your change artifacts. Reviewers get full context in the PR itself.
    ```bash
    glab mr create \
      --title "<title>" \
-     --description "<generated-description>" \
+     --description "<description>" \
      --target-branch main \
      --source-branch <current-branch>
    ```
@@ -99,20 +77,22 @@ your change artifacts. Reviewers get full context in the PR itself.
 
 ## For spikes
 
-- Title: `spike(<name>): <question from spike.md>`
+- Title: `spike(<name>): <question>`
 - Body: findings.md content
 - Mark as Draft/WIP
 
 ## For quick fixes (no change artifacts)
 
-Generate minimal description from commit history:
-```bash
-git log main..HEAD --oneline
-```
-Follow the template but mark sections as "N/A — quick fix".
+Generate from commit history: `git log main..HEAD --oneline`
+Follow template but mark sections as "N/A — quick fix".
 
-## Tips
+## Roles
+
+**Human:** confirm PR title/description, review the PR after creation.
+**Agent:** assemble description from artifacts, create PR/MR, report URL.
+
+## Tips for good PRs
 
 - Lead with WHY (the problem), not WHAT (the diff)
 - Link to specs and ADRs
-- Flag what you're NOT confident about — most valuable thing for reviewers
+- Flag what you're NOT confident about — most valuable for reviewers
